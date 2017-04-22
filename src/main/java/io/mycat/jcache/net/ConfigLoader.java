@@ -1,12 +1,14 @@
 package io.mycat.jcache.net;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
 import java.util.Properties;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * 配置加载器
@@ -14,6 +16,8 @@ import java.util.Properties;
  *
  */
 public class ConfigLoader {
+	
+	private static final String SYS_HOME = "JCACHE_HOME";
 	
 	private static final Logger logger = LoggerFactory.getLogger(ConfigLoader.class);
 	
@@ -27,7 +31,7 @@ public class ConfigLoader {
 	private ConfigLoader(){}
 	
 	public static void loadProperties(String path) throws IOException{
-		if(path==null&&path==""){
+		if(path==null||"".equals(path)){
 			 path = filepath;
 		}
 
@@ -35,10 +39,10 @@ public class ConfigLoader {
 			logger.info("Loading properties file from " + path);
 		}
 		
-		String root = Thread.currentThread().getContextClassLoader().getResource("").getPath();
-		System.out.println(root);
-		try (InputStream is = new FileInputStream(root+ "/" + path);){
-				properties.load(is);
+		File prop = getProperties(path);
+
+        try (InputStream ins = new FileInputStream(prop)){
+				properties.load(ins);
 		} catch (IOException e) {
 			if(logger.isErrorEnabled()){
 				logger.error("Could not load properties from "+path+":"+e.getMessage());
@@ -46,6 +50,26 @@ public class ConfigLoader {
 				throw e;
 			}
 		}
+	}
+	
+	
+	
+	private static File getProperties(String path){
+		String jcachehome = getJcacheHome();
+		System.out.println();
+		if(jcachehome!=null){
+			File home = new File(jcachehome);
+	        File conf = new File(home, "config");
+	        File prop = new File(conf, path);
+	        return prop;
+		}else{
+			String floder = ConfigLoader.class.getClassLoader().getResource("").getPath();
+			return new File(floder+path);
+		}
+	}
+	
+	private static String getJcacheHome(){
+		return System.getProperty(SYS_HOME);
 	}
 	
 	public static String getProperty(String property){

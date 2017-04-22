@@ -7,7 +7,10 @@ package io.mycat.jcache.util;
  */
 public class Test {
 	
-	public static void main(String[] args) {
-	}
-
-}
+	private static final long _1G = 1024 * 1024 * 1024; 
+	
+    public static void main(String[] args) {
+    	Long aa = UnSafeUtil.unsafe.allocateMemory(4);
+    	System.out.println(Long.toBinaryString(aa));
+    }
+}  
